@@ -4,6 +4,7 @@ import { collection, limit, orderBy, query, where } from "firebase/firestore";
 import { useCollectionData } from "react-firebase-hooks/firestore";
 import { useAuthState } from "react-firebase-hooks/auth";
 import LoadingSpinner from "./loadingSpinner";
+import { useRouter } from "next/router";
 
 const MessageList = (props) => {
 
@@ -43,8 +44,13 @@ const MessageList = (props) => {
 };
 
 export default function ChatMessage() {
+
+  // Get paramter id!
+  const router = useRouter(); 
+
+  // Query Message on current Parameter ID
   const queryMessage = query(
-    collection(firebaseDB, `chat/${process.env.NEXT_PUBLIC_PUBLIC_ROOM_DOCUMENT_ID}/messages`),
+    collection(firebaseDB, `chat/${router.query?.id}/messages`),
     orderBy("timestamp"), limit(25)
   );
   const [user] = useAuthState(auth);

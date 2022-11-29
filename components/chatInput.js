@@ -2,13 +2,19 @@ import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { firebaseDB, auth } from "../firebase.config";
 import { useRef } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { useRouter } from "next/router";
 
 export default function ChatInput() {
+  // Get paramter id!
+  const router = useRouter(); 
+
+  // Set up the Messages
   const messages = useRef(null);
 
+  // Select current collection base on parameter id!
   const database = collection(
     firebaseDB,
-    `chat/${process.env.NEXT_PUBLIC_PUBLIC_ROOM_DOCUMENT_ID}/messages`
+    `chat/${router.query?.id}/messages`
   );
 
   const [user] = useAuthState(auth);
