@@ -1,4 +1,4 @@
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { addDoc, collection, doc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { firebaseDB, auth } from "../firebase.config";
 import { useRef } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -20,7 +20,11 @@ export default function ChatInput() {
   const [user] = useAuthState(auth);
 
   const sendMessage = async () => {
+    // Get Message from input!
     let message = messages.current.value;
+    
+    // Set Parent Doc!
+    const parentDoc = doc(firebaseDB, 'chat', router?.query.id)
 
     const createMessage = await addDoc(database, {
       alias: user.displayName,
@@ -28,6 +32,8 @@ export default function ChatInput() {
       text: message,
       timestamp: serverTimestamp(),
     });
+
+    const updateLastMessage = await updateDoc(parentDoc, {last_message : message})
 
     messages.current.value = "";
   };
