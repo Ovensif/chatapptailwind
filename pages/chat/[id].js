@@ -17,6 +17,6 @@ export default function Chat() {
     return <LoadingSpinner />
   }
 
-  return <ChatRoom />;
+  return <ChatRoom user={user} />;
 
 }

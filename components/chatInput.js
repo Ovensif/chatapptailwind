@@ -1,10 +1,9 @@
 import { addDoc, collection, doc, serverTimestamp, updateDoc } from "firebase/firestore";
-import { firebaseDB, auth } from "../firebase.config";
+import { firebaseDB } from "../firebase.config";
 import { useRef } from "react";
-import { useAuthState } from "react-firebase-hooks/auth";
 import { useRouter } from "next/router";
 
-export default function ChatInput() {
+export default function ChatInput(props) {
   // Get paramter id!
   const router = useRouter(); 
 
@@ -17,7 +16,7 @@ export default function ChatInput() {
     `chat/${router.query?.id}/messages`
   );
 
-  const [user] = useAuthState(auth);
+  const user = props.user
 
   const sendMessage = async () => {
     // Get Message from input!
@@ -33,9 +32,9 @@ export default function ChatInput() {
       timestamp: serverTimestamp(),
     });
 
-    const updateLastMessage = await updateDoc(parentDoc, {last_message : message})
-
     messages.current.value = "";
+
+    const updateLastMessage = await updateDoc(parentDoc, {last_message : message})
   };
 
   const onEnter = async (event) => {
