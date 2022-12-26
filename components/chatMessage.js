@@ -1,13 +1,13 @@
 import Image from "next/image";
 import { firebaseDB, auth } from "../firebase.config";
-import { collection, limit, orderBy, query, where } from "firebase/firestore";
-import { useCollectionData } from "react-firebase-hooks/firestore";
+import { collection, limit, orderBy, query, doc } from "firebase/firestore";
+import { useCollectionData, useDocumentData } from "react-firebase-hooks/firestore";
 import { useAuthState } from "react-firebase-hooks/auth";
 import LoadingSpinner from "./loadingSpinner";
 import { useRouter } from "next/router";
+import { showOppositeEmail } from "../utils/library";
 
 const MessageList = (props) => {
-
   let messages = props.messages;
 
   if (props.user?.email == props.messages?.email) {
@@ -44,26 +44,46 @@ const MessageList = (props) => {
 };
 
 export default function ChatMessage() {
-
   // Get paramter id!
-  const router = useRouter(); 
+  const router = useRouter();
+  let currentProfile = '';
 
   // Query Message on current Parameter ID
   const queryMessage = query(
     collection(firebaseDB, `chat/${router.query?.id}/messages`),
-    orderBy("timestamp"), limit(25)
+    orderBy("timestamp"),
+    limit(25)
   );
+
   const [user] = useAuthState(auth);
-  const [messages, loading] = useCollectionData(queryMessage);
+  const [messages, loading] = useCollectionData(queryMessage); 
+  const [snapshotCurrentDocument, loadingCurrentDocument] = useDocumentData(doc(firebaseDB, 'chat', `${router.query?.id}`));
+
+  // Check if LoadingCurrentDocument is already over or not!
+  if(!loadingCurrentDocument){
+    currentProfile = snapshotCurrentDocument?.type == 'private' ? showOppositeEmail({currentUser : user, owner : snapshotCurrentDocument}) : snapshotCurrentDocument?.owner;
+  }
 
   return (
-    <div className="relative w-full p-6 overflow-y-auto h-[40rem]">
-      <ul className="space-y-2">
-        {loading ?? <LoadingSpinner />}
-        {messages?.map((messages) => (
-          <MessageList key={Math.random()} user={user} messages={messages} />
-        ))}
-      </ul>
+    <div>
+      <div className="relative flex items-center p-3 border-b border-gray-300">
+        <Image
+          className="object-cover w-10 h-10 rounded-full"
+          src="/assets/img/world.png"
+          alt=""
+          width={40}
+          height={40}
+        />
+        <span className="block ml-2 font-bold text-gray-600">{currentProfile}</span>
+      </div>
+      <div className="relative w-full p-6 overflow-y-auto h-[40rem]">
+        <ul className="space-y-2">
+          {loading ?? <LoadingSpinner />}
+          {messages?.map((messages) => (
+            <MessageList key={Math.random()} user={user} messages={messages} />
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }

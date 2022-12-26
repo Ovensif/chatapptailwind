@@ -1,6 +1,5 @@
 import ChatMessage from "./chatMessage";
 import ChatPublicRoom from "./chatPublicRoom";
-import ChatHeader from "./chatHeader";
 import ChatInput from "./chatInput";
 import ChatHeaderSidebar from "./chatHeaderSidebar";
 import { collection, where, query } from "firebase/firestore";
@@ -17,6 +16,7 @@ export default function ChatRoom(props) {
       where("owner", "array-contains", `${user?.email}`)
     )
   );
+  
   const [snapshotPublicChat] = useCollection(
     query(collection(firebaseDB, "chat"), where("type", "==", `public`))
   );
@@ -59,7 +59,6 @@ export default function ChatRoom(props) {
         </div>
         <div className="hidden lg:col-span-2 lg:block">
           <div className="w-full">
-            <ChatHeader />
 
             <ChatMessage />
 
