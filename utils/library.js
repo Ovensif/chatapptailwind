@@ -1,9 +1,9 @@
 const showOppositeEmail = (props) => {
 
-    let emailCurrentUser = props?.currentUser
+    let emailCurrentUser = props?.currentUser.email
     let emailList = props?.owner?.owner
-    
-    return emailList.indexOf(emailCurrentUser) == 0 ? emailList[0] : emailList[1];
+
+    return emailCurrentUser == emailList[0] ? emailList[1] : emailList[0];
 }
 
 export {showOppositeEmail}

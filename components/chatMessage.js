@@ -1,11 +1,18 @@
 import Image from "next/image";
 import { firebaseDB, auth } from "../firebase.config";
 import { collection, limit, orderBy, query, doc } from "firebase/firestore";
-import { useCollectionData, useDocumentData } from "react-firebase-hooks/firestore";
+import {
+  useCollectionData,
+  useDocumentData,
+} from "react-firebase-hooks/firestore";
 import { useAuthState } from "react-firebase-hooks/auth";
 import LoadingSpinner from "./loadingSpinner";
 import { useRouter } from "next/router";
 import { showOppositeEmail } from "../utils/library";
+import { signOut } from "firebase/auth";
+import { useState } from "react";
+import AddContactModal from "./addContactModal";
+import { Portal } from "react-portal";
 
 const MessageList = (props) => {
   let messages = props.messages;
@@ -46,7 +53,7 @@ const MessageList = (props) => {
 export default function ChatMessage() {
   // Get paramter id!
   const router = useRouter();
-  let currentProfile = '';
+  let currentProfile = "";
 
   // Query Message on current Parameter ID
   const queryMessage = query(
@@ -56,26 +63,58 @@ export default function ChatMessage() {
   );
 
   const [user] = useAuthState(auth);
-  const [messages, loading] = useCollectionData(queryMessage); 
-  const [snapshotCurrentDocument, loadingCurrentDocument] = useDocumentData(doc(firebaseDB, 'chat', `${router.query?.id}`));
+  const [messages, loading] = useCollectionData(queryMessage);
+  const [snapshotCurrentDocument, loadingCurrentDocument] = useDocumentData(
+    doc(firebaseDB, "chat", `${router.query?.id}`)
+  );
+  const [isOpen, setIsOpen] = useState(false);
 
   // Check if LoadingCurrentDocument is already over or not!
-  if(!loadingCurrentDocument){
-    currentProfile = snapshotCurrentDocument?.type == 'private' ? showOppositeEmail({currentUser : user, owner : snapshotCurrentDocument}) : snapshotCurrentDocument?.owner;
+  if (!loadingCurrentDocument) {
+    currentProfile =
+      snapshotCurrentDocument?.type == "private"
+        ? showOppositeEmail({
+            currentUser: user,
+            owner: snapshotCurrentDocument,
+          })
+        : snapshotCurrentDocument?.owner;
   }
 
   return (
     <div>
-      <div className="relative flex items-center p-3 border-b border-gray-300">
-        <Image
-          className="object-cover w-10 h-10 rounded-full"
-          src="/assets/img/world.png"
-          alt=""
-          width={40}
-          height={40}
-        />
-        <span className="block ml-2 font-bold text-gray-600">{currentProfile}</span>
+      {/* Header Profile */}
+      <div className="relative flex items-center justify-between border-b border-gray-300">
+        <div className="relative flex p-3">
+          <Image
+            className="object-cover w-10 h-10 rounded-full"
+            src="/assets/img/world.png"
+            alt=""
+            width={40}
+            height={40}
+          />
+          <span className="block ml-2 font-bold text-gray-600">
+            {currentProfile}
+          </span>
+        </div>
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setIsOpen(true)}
+            className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+          >
+            Add
+          </button>
+          <button
+            type="button"
+            className="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900"
+            onClick={() => signOut(auth)}
+          >
+            Exit
+          </button>
+        </div>
       </div>
+
+      {/* Message List */}
       <div className="relative w-full p-6 overflow-y-auto h-[40rem]">
         <ul className="space-y-2">
           {loading ?? <LoadingSpinner />}
@@ -84,6 +123,11 @@ export default function ChatMessage() {
           ))}
         </ul>
       </div>
+
+      {/* React Portal For Modal */}
+      <Portal>
+        <AddContactModal showModal={isOpen} currentUser={user} closeModal={() => setIsOpen(false)}/>
+      </Portal>
     </div>
   );
 }
