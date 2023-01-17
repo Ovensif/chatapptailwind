@@ -6,7 +6,6 @@ import { useDocument} from "react-firebase-hooks/firestore";
 import { firebaseDB } from "../../firebase.config";
 import { doc } from "firebase/firestore";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
 
 export default function Chat(req, res) {
 
