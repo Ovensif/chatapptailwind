@@ -10,9 +10,10 @@ import LoadingSpinner from "./loadingSpinner";
 import { useRouter } from "next/router";
 import { showOppositeEmail } from "../utils/library";
 import { signOut } from "firebase/auth";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import AddContactModal from "./addContactModal";
 import { Portal } from "react-portal";
+
 
 const MessageList = (props) => {
   let messages = props.messages;
@@ -54,6 +55,12 @@ export default function ChatMessage() {
   // Get paramter id!
   const router = useRouter();
   let currentProfile = "";
+  const chatWindowRef = useRef(null);
+
+  // Auto Scrool Bottom
+  const scrollToBottom = () => {
+    chatWindowRef.current.scrollTop = chatWindowRef.current.scrollHeight;
+  };
 
   // Query Message on current Parameter ID
   const queryMessage = query(
@@ -79,6 +86,8 @@ export default function ChatMessage() {
           })
         : snapshotCurrentDocument?.owner;
   }
+
+  useEffect(scrollToBottom);
 
   return (
     <div>
@@ -115,18 +124,31 @@ export default function ChatMessage() {
       </div>
 
       {/* Message List */}
-      <div className="relative w-full p-6 overflow-y-auto h-[40rem]">
-        <ul className="space-y-2">
-          {loading ?? <LoadingSpinner />}
-          {messages?.map((messages) => (
-            <MessageList key={Math.random()} user={user} messages={messages} />
-          ))}
-        </ul>
+      <div className="overflow-hidden">
+        <div
+          ref={chatWindowRef}
+          className="relative w-full p-6 overflow-y-auto h-[40rem]"
+        >
+          <ul className="space-y-2">
+            {loading ?? <LoadingSpinner />}
+            {messages?.map((messages) => (
+              <MessageList
+                key={Math.random()}
+                user={user}
+                messages={messages}
+              />
+            ))}
+          </ul>
+        </div>
       </div>
 
       {/* React Portal For Modal */}
       <Portal>
-        <AddContactModal showModal={isOpen} currentUser={user} closeModal={() => setIsOpen(false)}/>
+        <AddContactModal
+          showModal={isOpen}
+          currentUser={user}
+          closeModal={() => setIsOpen(false)}
+        />
       </Portal>
     </div>
   );
